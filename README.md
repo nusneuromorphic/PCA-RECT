@@ -1,10 +1,10 @@
-Event-based Recognition for FPGA implementation
+# PCA-RECT: Event-based Object Detection and Classification
 
 The VLFeat Library is provided with the repo and the MATLAB script configures it on-the-fly.
 
-Needs MATLAB AER Vision Functions from Garrick Orchard (https://github.com/gorchard/Matlab_AER_vision_functions)
+Needs [MATLAB AER Vision Functions](https://github.com/gorchard/Matlab_AER_vision_functions) from Garrick Orchard.
 
-There are three version of the code:
+There are four versions of the code:
 
    FPGAModular: For evaluating the exact modular version where FPGA is closely followed
    
@@ -14,19 +14,17 @@ There are three version of the code:
    
    FASTnoPCAwithDet: Fast version with detector incorporated (no PCA) (YH and RB)
    
-At the moment, the training files are in our neuromorphic shared drive and needs to be placed one folder level above the working folder 
-(the code uses '../' to reference the files). 
+The training files can be found in the [N-SOD Dataset](https://tinyurl.com/s84nlm4) and needs to be placed in the correct path, relative to the main executing file. (the code uses '../' to reference the files). 
 
-\Storage\Recognition_FPGA_trainfiles
+../../N-SOD Datatet/
 
------Instruction for Tunning Parameters(testing)-----(Yang Hong)
-Tune descriptor size: 1) set value of "param.descsize=7"  2) CTRL+H to replace "5by5" to "7by7"
-Tune codebook size: 1) set value of "histopts.num_bins=150" 2) CTRL+H to replace "100codebok" to "150codebok"
+## Instruction for Tunning Parameters (testing)
+Tune descriptor size: 
+   1. Set value of "param.descsize=7"
+   2. CTRL+H to replace "5by5" to "7by7"
+   
+Tune codebook size: 
+   1. Set value of "histopts.num_bins=150"
+   2. CTRL+H to replace "100codebok" to "150codebok"
 
 Then, you can run the code to load or get your data properly.
-
-
-
-
-
-
