@@ -220,7 +220,6 @@ else
     % Load the codebook
     load(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
-    model.kdtree = convert_tree_template( model.kdtree );
     
 end
 
