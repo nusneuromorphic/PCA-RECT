@@ -32,7 +32,7 @@ refractory_period = 1e3;
 
 % Debug purpose --
 training_done = 0;
-training_desc_done = 1; % for debug purposes only , if desc have been stored
+training_desc_done = 0; % for debug purposes only , if desc have been stored
 
 % The training phase is here so that it is easy to change parameters
 % and check the code of the FPGA implmentation. The testing stage will be
