@@ -54,7 +54,7 @@ event_chunk_period = 1e4; % get a histogram for classification every 10k events,
 % Check if codebook exists
 model_str_stringname = 'modelTD4cl_D5DEMOsplitAUG_FPGAver2nonorm';
 try
-    load(['../../Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
+    load(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
 catch
@@ -63,7 +63,7 @@ end
 
 if training_done == 0
     count = 0;
-    train_desc_savefolder = '../../Recognition_FPGA_trainfiles/D5DEMOrectFPGA_splitaug/';
+    train_desc_savefolder = './Recognition_FPGA_trainfiles/D5DEMOrectFPGA_splitaug/';
     mkdir(train_desc_savefolder);
     if training_desc_done == 0
         for class_i=1:num_classes
@@ -106,7 +106,7 @@ if training_done == 0
             end
         end
         
-        save('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
+        save('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
             'train_label','trainimage_sizes','-v7.3');
         
         poolobj = gcp('nocreate');
@@ -114,7 +114,7 @@ if training_done == 0
         
     else
         disp('Loading descrs...');
-        load('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
+        load('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
     end
     
     % Build the codebook
@@ -124,7 +124,8 @@ if training_done == 0
         model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
         model.kdtree = convert_tree_template( model.kdtree );
         model.vocab=double(model.vocab);
-        save(['../../Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
+        mkdir('./Recognition_FPGA_trainfiles/ECtrainmodels/');
+        save(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
             num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model','loctrain_label');
     end
     
@@ -209,11 +210,11 @@ if training_done == 0
     
     svmmodel.b = b ;
     svmmodel.w = w;
-    save('../../Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat','svmmodel','detector_codewords');
+    save('./Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat','svmmodel','detector_codewords');
     
 else
     % Load the SVM
-    load('../../Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat');
+    load('./Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat');
     
     % Set precision to 8 significant digits
     digitsOld = digits(8);
@@ -222,7 +223,7 @@ else
     svmmodel.b = vpa(svmmodel.b);
     
     % Load the codebook
-    load(['../../Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
+    load(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model.kdtree = convert_tree_template( model.kdtree );
     
