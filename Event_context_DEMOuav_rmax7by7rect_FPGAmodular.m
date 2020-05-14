@@ -129,8 +129,6 @@ if training_done == 0
             num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model','loctrain_label');
     end
     
-    model.kdtree = convert_tree_template( model.kdtree );
-    
     % Initialize detection vector
     det_vector = zeros(histopts.num_bins, 1);
     det_class = find(strcmp(classnames, 'Thumper')); % the integer denoting the Thumper class
