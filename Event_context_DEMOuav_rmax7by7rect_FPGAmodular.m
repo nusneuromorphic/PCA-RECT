@@ -109,9 +109,6 @@ if training_done == 0
         save('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
             'train_label','trainimage_sizes','-v7.3');
         
-        poolobj = gcp('nocreate');
-        delete(poolobj);
-        
     else
         disp('Loading descrs...');
         load('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
