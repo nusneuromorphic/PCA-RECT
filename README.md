@@ -16,9 +16,16 @@ There are four versions of the code:
    
 The training files can be found in the [N-SOD Dataset](https://tinyurl.com/s84nlm4) and needs to be placed in the correct path, relative to the main executing file. (the code uses '../' to reference the files). 
 
-../../N-SOD Datatet/
+../N-SOD Datatet/
 
-## Instruction for Tunning Parameters (testing)
+
+## Instructions to execute
+
+   1. Download the N-SOD Dataset and place above the PCA-RECT folder.
+   2. Add to path the MATLAB AER Vision Functions.
+   3. Run one of the scripts, e.g. Event_context_DEMOuav_rmax7by7rect_FAST
+
+## Instructions for Tunning Parameters (testing)
 Tune descriptor size: 
    1. Set value of "param.descsize=7"
    2. CTRL+H to replace "5by5" to "7by7"
