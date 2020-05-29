@@ -6,8 +6,8 @@ run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
 
 % Put all the folders (classes) in a single folder
-train_dataset_path = '../../N-SOD Dataset/Train';
-test_dataset_path = '../../N-SOD Dataset/Test';
+train_dataset_path = '../N-SOD Dataset/Train';
+test_dataset_path = '../N-SOD Dataset/Test';
 
 filenamesA = dir2(train_dataset_path);
 

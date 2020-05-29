@@ -6,7 +6,7 @@ run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
 
 % Put all the folders (classes) in a single folder
-train_dataset_path = '../../N-SOD Dataset/Train';
+train_dataset_path = '../N-SOD Dataset/Train';
 
 filenamesA = dir2(train_dataset_path);
 
@@ -91,7 +91,7 @@ testing_desc_done = 1;
 % precision and memory constraints closely followed.
 
 count = 0;
-train_desc_savefolder = '../ECtraindata_DEMOrectFPGA_ver2/';
+train_desc_savefolder = './ECtraindata_FASTWithDet/';
 mkdir(train_desc_savefolder);
 if training_desc_done == 0
     for class_i=1:num_classes
@@ -129,7 +129,7 @@ if training_desc_done == 0
         end
     end
     
-    save('../NDEMO4desc_7x7subsamp2x2_ustime5e3.mat',...
+    save('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat',...
         'train_label','trainimage_sizes','-v7.3');
     
     poolobj = gcp('nocreate');
@@ -137,7 +137,7 @@ if training_desc_done == 0
     
 else
     disp('Loading descrs...');
-    load('../NDEMO4desc_7x7subsamp2x2_ustime5e3.mat');
+    load('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat');
 end
 
 histopts.num_bins = 150; % codebook size
@@ -154,9 +154,9 @@ svmOpts.biasMultiplier = 1 ;
 
 % Build the codebook
 clearvars model net
-model_str_stringname = 'modelTD4cl_DEMO_FPGAver2nonorm';
+model_str_stringname = 'modelTD4cl_DEMO_FASTWithDet';
 try
-    load(['../ECtrainmodels/' model_str_stringname ...
+    load(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
 catch
@@ -168,7 +168,8 @@ if model_done == 0
     [model.vocab, model.assoc] = vl_kmeans(vl_colsubset(single([train_data.desc]), 4e6), histopts.num_bins, 'verbose','algorithm', 'ANN') ;
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
     model.vocab = double(model.vocab);
-    save(['../ECtrainmodels/' model_str_stringname ...
+    mkdir('./ECtrainmodels/');
+    save(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model');
 end
 
@@ -266,7 +267,7 @@ for repeat= 1
     % testing stage
     count = 0;
     test_label = [];
-    test_desc_savefolder = '../ECtestdata_DEMOrect_FPGAver2/';
+    test_desc_savefolder = './ECtestdata_FASTWithDet/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
         for class_i=1:num_classes
@@ -299,7 +300,7 @@ for repeat= 1
             end
         end
         testing_desc_done =1;
-        save('../NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat',...
+        save('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat',...
             'test_label','testimage_sizes','-v7.3');
         
         poolobj = gcp('nocreate');
@@ -307,7 +308,7 @@ for repeat= 1
         
     else
         disp('Loading test descrs...'); % nneds modification of code if desc_done=0
-        load('../NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat');
+        load('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat');
     end
     
     %% ---------------------------------------------------------------------------

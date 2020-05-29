@@ -6,7 +6,7 @@ run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
 
 % Put all the folders (classes) in a single folder
-train_dataset_path = '../../N-SOD Dataset/Train';
+train_dataset_path = '../N-SOD Dataset/Train';
 
 filenamesA = dir2(train_dataset_path);
 
@@ -91,7 +91,7 @@ testing_desc_done = 0;
 % made modular like how the FPGA implementation is intended to be, fixed
 % precision and memory constraints closely followed.
 count = 0;
-train_desc_savefolder = '../ECtraindata_DEMOrectFPGA_ver2_5by5_PCA/';
+train_desc_savefolder = './ECtraindata_DEMOrectFAST_ver2_5by5_PCA/';
 mkdir(train_desc_savefolder);
 if training_desc_done == 0
     for class_i=1:num_classes
@@ -128,7 +128,7 @@ if training_desc_done == 0
         end
     end
     
-    save('../NDEMO4desc_5by5subsamp2x2_ustime5e3_PCA.mat',...
+    save('./NDEMO4desc_5by5subsamp2x2_ustime5e3_PCA.mat',...
         'train_label','trainimage_sizes','-v7.3');
     
     poolobj = gcp('nocreate');
@@ -136,7 +136,7 @@ if training_desc_done == 0
     
 else
     disp('Loading descrs...');
-    load('../NDEMO4desc_5by5subsamp2x2_ustime5e3_PCA.mat');
+    load('./NDEMO4desc_5by5subsamp2x2_ustime5e3_PCA.mat');
 end
 
 histopts.num_bins = 150; % codebook size
@@ -151,9 +151,9 @@ pcadims = 25;
 fprintf('pcadims = %d\n', pcadims);
 % Build the codebook
 clearvars model net
-model_str_stringname = 'modelTD4cl_DEMO_FPGAver2nonorm_PCA';
+model_str_stringname = 'modelTD4cl_DEMO_FASTver2nonorm_PCA';
 try
-    load(['../ECtrainmodels/' model_str_stringname ...
+    load(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 0;
 catch
@@ -171,8 +171,10 @@ if model_done == 0
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
     model.vocab = double(model.vocab);
     clearvars traindata_afterpca traindata_befpca
-    save(['../ECtrainmodels/' model_str_stringname ...
-        num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)],'model', 'attr_means');
+    mkdir('./ECtrainmodels/');
+    save(['./ECtrainmodels/' model_str_stringname ...
+        num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)], ...
+        'model', 'attr_means', 'coeff');
 end
 
 % For possbile integer comparisons on FPGA
@@ -252,10 +254,10 @@ for repeat= 1
         
         svmmodel.b = b ;
         svmmodel.w = w;
-        save('svvmodel_DEMO_FPGAver2_150codebok_5by5_NONORM_PCA.mat','svmmodel');
+        save('svvmodel_DEMO_FASTver2_150codebok_5by5_NONORM_PCA.mat','svmmodel');
         
     else
-        load('svvmodel_DEMO_FPGAver2_150codebok_5by5_NONORM_PCA.mat');
+        load('svvmodel_DEMO_FASTver2_150codebok_5by5_NONORM_PCA.mat');
     end
     
     %% -------------------------------------------------------------------------
@@ -265,7 +267,7 @@ for repeat= 1
     % testing stage
     count = 0;
     test_label = [];
-    test_desc_savefolder = '../ECtestdata_DEMOrect_FPGAver2_5by5_PCA/';
+    test_desc_savefolder = './ECtestdata_DEMOrect_FASTver2_5by5_PCA/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
         for class_i=1:num_classes
@@ -297,7 +299,7 @@ for repeat= 1
             end
         end
         testing_desc_done =1;
-        save('../NDEMO4testdesc_5by5subsamp2x2_ustime5e3_PCA.mat',...
+        save('./NDEMO4testdesc_5by5subsamp2x2_ustime5e3_PCA.mat',...
             'test_label','testimage_sizes','-v7.3');
         
         poolobj = gcp('nocreate');
@@ -305,7 +307,7 @@ for repeat= 1
         
     else
         disp('Loading test descrs...'); % needs modification of code if desc_done=0
-        load('../NDEMO4testdesc_5by5subsamp2x2_ustime5e3_PCA.mat');
+        load('./NDEMO4testdesc_5by5subsamp2x2_ustime5e3_PCA.mat');
     end
     
     %% ---------------------------------------------------------------------------

@@ -6,8 +6,8 @@ run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
 
 % Put all the folders (classes) in a single folder
-train_dataset_path = '../../N-SOD Dataset/Train';
-test_dataset_path = '../../N-SOD Dataset/Test';
+train_dataset_path = '../N-SOD Dataset/Train';
+test_dataset_path = '../N-SOD Dataset/Test';
 
 filenamesA = dir2(train_dataset_path);
 
@@ -41,7 +41,7 @@ testing_desc_done = 0;
 % precision and memory constraints closely followed.
 
 count = 0;
-train_desc_savefolder = '../../Recognition_FPGA_trainfiles/D5DEMOrectFPGA_splitaug/';
+train_desc_savefolder = './Recognition_trainfiles/D5DEMOrectFASTnoPCA_splitaug/';
 mkdir(train_desc_savefolder);
 if training_desc_done == 0
     for class_i=1:num_classes
@@ -85,7 +85,7 @@ if training_desc_done == 0
         end
     end
     
-    save('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
+    save('./Recognition_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
         'train_label','trainimage_sizes','-v7.3');
     
     poolobj = gcp('nocreate');
@@ -93,7 +93,7 @@ if training_desc_done == 0
     
 else
     disp('Loading descrs...');
-    load('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
+    load('./Recognition_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
 end
 
 histopts.num_bins = 150; % codebook size
@@ -106,9 +106,9 @@ svmOpts.biasMultiplier = 1 ;
 
 % Build the codebook
 clearvars model net
-model_str_stringname = 'modelTD4cl_D5DEMOsplitAUG_FPGAver2nonorm';
+model_str_stringname = 'modelTD4cl_D5DEMOsplitAUG_FASTnoPCA';
 try
-    load(['../../Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
+    load(['./Recognition_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
 catch
@@ -120,7 +120,8 @@ if model_done == 0
     [model.vocab, model.assoc] = vl_kmeans(vl_colsubset(single([train_data.desc]), 4e6), histopts.num_bins, 'verbose','algorithm', 'ANN') ;
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
     model.vocab = double(model.vocab);
-    save(['../../Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
+    mkdir('./Recognition_trainfiles/ECtrainmodels/');
+    save(['./Recognition_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model');
 end
 
@@ -193,9 +194,9 @@ for repeat= 1
         
         svmmodel.b = b ;
         svmmodel.w = w;
-        save('../../Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat','svmmodel');
+        save('./Recognition_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat','svmmodel');
     else
-        load('../../Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat');
+        load('./Recognition_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat');
     end
     
     %% -------------------------------------------------------------------------
@@ -206,7 +207,7 @@ for repeat= 1
     
     count = 0;
     test_label = [];
-    test_desc_savefolder = '../../Recognition_FPGA_trainfiles/D5DEMOrect_FPGAver2_testsplitaug/';
+    test_desc_savefolder = './Recognition_trainfiles/D5DEMOrect_FPGAver2_testsplitaug/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
         for class_i=1:num_classes
@@ -249,14 +250,14 @@ for repeat= 1
             end
         end
         testing_desc_done =1;
-        save('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat',...
+        save('./Recognition_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat',...
             'test_label','testimage_sizes','-v7.3');
         
         poolobj = gcp('nocreate');
         delete(poolobj);
     else
         disp('Loading test descrs...'); % needs modification of code if desc_done=0
-        load('../../Recognition_FPGA_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat');
+        load('./Recognition_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat');
     end
     
     %% ---------------------------------------------------------------------------
