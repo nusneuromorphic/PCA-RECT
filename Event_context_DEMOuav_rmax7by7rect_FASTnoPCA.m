@@ -12,6 +12,7 @@ test_dataset_path = '../N-SOD Dataset/Test';
 filenamesA = dir2(train_dataset_path);
 
 num_classes=numel(filenamesA);
+classnames = cell(1, num_classes);
 for i=1:num_classes
     classnames{i}=filenamesA(i).name;
 end
@@ -359,5 +360,5 @@ for repeat= 1
     error_locs=find(obj_cat(:,2)'~=test_label)
     error_per=length(error_locs)
     accuracy(repeat)= 100*(numel(test_label)-  error_per)/numel(test_label)
-    confusionmat(single(test_label), single(obj_cat(:,2)))
+    confusionmat(single(test_label), single(obj_cat(:,2)));
 end

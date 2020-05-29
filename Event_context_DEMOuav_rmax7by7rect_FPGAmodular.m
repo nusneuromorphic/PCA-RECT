@@ -12,6 +12,7 @@ test_dataset_path = '../N-SOD Dataset/Test';
 filenamesA = dir2(train_dataset_path);
 
 num_classes=numel(filenamesA);
+classnames = cell(1, num_classes);
 for i=1:num_classes
     classnames{i}=filenamesA(i).name;
 end

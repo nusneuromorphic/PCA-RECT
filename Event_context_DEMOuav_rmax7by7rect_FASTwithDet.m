@@ -11,6 +11,7 @@ train_dataset_path = '../N-SOD Dataset/Train';
 filenamesA = dir2(train_dataset_path);
 
 num_classes=numel(filenamesA);
+classnames = cell(1, num_classes);
 for i=1:num_classes
     classnames{i}=filenamesA(i).name;
 end
@@ -81,9 +82,9 @@ disp(param);
 us_time_filter = 5e3; % in micro-seconds
 
 % Debug purpose --
-training_desc_done = 1; % for debug purposes only
-svmtraining_done = 1;
-testing_desc_done = 1;
+training_desc_done = 0; % for debug purposes only
+svmtraining_done = 0;
+testing_desc_done = 0;
 
 % The training phase is here so that it is easy to change parameters
 % and check the code of the FPGA implmentation. The testing stage will be

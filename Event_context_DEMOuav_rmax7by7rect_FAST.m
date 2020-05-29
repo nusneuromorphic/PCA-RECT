@@ -11,6 +11,7 @@ train_dataset_path = '../N-SOD Dataset/Train';
 filenamesA = dir2(train_dataset_path);
 
 num_classes=numel(filenamesA);
+classnames = cell(1, num_classes);
 for i=1:num_classes
     classnames{i}=filenamesA(i).name;
 end
@@ -155,7 +156,7 @@ model_str_stringname = 'modelTD4cl_DEMO_FASTver2nonorm_PCA';
 try
     load(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)]);
-    model_done = 0;
+    model_done = 1;
 catch
     model_done = 0;
 end
