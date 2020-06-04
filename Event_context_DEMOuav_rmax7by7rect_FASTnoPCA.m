@@ -88,10 +88,6 @@ if training_desc_done == 0
     
     save('./Recognition_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
         'train_label','trainimage_sizes','-v7.3');
-    
-    poolobj = gcp('nocreate');
-    delete(poolobj);
-    
 else
     disp('Loading descrs...');
     load('./Recognition_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
@@ -253,9 +249,6 @@ for repeat= 1
         testing_desc_done =1;
         save('./Recognition_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat',...
             'test_label','testimage_sizes','-v7.3');
-        
-        poolobj = gcp('nocreate');
-        delete(poolobj);
     else
         disp('Loading test descrs...'); % needs modification of code if desc_done=0
         load('./Recognition_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat');

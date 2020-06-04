@@ -149,12 +149,8 @@ if training_desc_done == 0
         end
     end
 
- save('/hpctmp2/tslrame/NCAL100descrect_7x12_rmax10_rmin2_ustime200e3.mat',...
+    save('/hpctmp2/tslrame/NCAL100descrect_7x12_rmax10_rmin2_ustime200e3.mat',...
      'train_label','trainimage_sizes','-v7.3');
-
- poolobj = gcp('nocreate');
- delete(poolobj);
-
 else
     disp('Loading descrs...'); % nneds modification of code if desc_done=0
 load('/hpctmp2/tslrame/NCAL100descrect_7x12_rmax10_rmin2_ustime200e3.mat');
@@ -316,10 +312,6 @@ svmmodel.w = w;
          testing_desc_done =1;
          save('/hpctmp2/tslrame/NCAL100testdescrect_7x12_rmax10_rmin2_ustime200e3.mat',...
              'test_label','testimage_sizes','-v7.3');
-
-         poolobj = gcp('nocreate');
-         delete(poolobj);
-
     else
         disp('Loading test descrs...'); % nneds modification of code if desc_done=0
         load('/hpctmp2/tslrame/NCAL100testdescrect_7x12_rmax10_rmin2_ustime200e3.mat');

@@ -132,10 +132,6 @@ if training_desc_done == 0
     
     save('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat',...
         'train_label','trainimage_sizes','-v7.3');
-    
-    poolobj = gcp('nocreate');
-    delete(poolobj);
-    
 else
     disp('Loading descrs...');
     load('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat');
@@ -303,10 +299,6 @@ for repeat= 1
         testing_desc_done =1;
         save('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat',...
             'test_label','testimage_sizes','-v7.3');
-        
-        poolobj = gcp('nocreate');
-        delete(poolobj);
-        
     else
         disp('Loading test descrs...'); % nneds modification of code if desc_done=0
         load('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat');
