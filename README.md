@@ -6,13 +6,13 @@ Needs [MATLAB AER Vision Functions](https://github.com/gorchard/Matlab_AER_visio
 
 There are four versions of the code:
 
-   FPGAModular: For evaluating the exact modular version where FPGA is closely followed
+   FPGAModular: For evaluating the exact modular version where FPGA is closely followed.
    
-   FAST: 100x faster Quick floating-point versions for parameter testing (YH and RB)
+   FAST: 100x faster Quick floating-point versions for parameter testing.
    
-   FASTnoPCA: Fast version without principal component analysis (YH and RB)
+   FASTnoPCA: Fast version without principal component analysis.
    
-   FASTnoPCAwithDet: Fast version with detector incorporated (no PCA) (YH and RB)
+   FASTnoPCAwithDet: Fast version with detector incorporated (no PCA).
    
 The training files can be found in the [N-SOD Dataset](https://tinyurl.com/s84nlm4) and needs to be placed in the correct path, relative to the main executing file. (the code uses '../' to reference the files). 
 
