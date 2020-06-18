@@ -162,7 +162,7 @@ if model_done == 0
     traindata_befpca = single([train_data.desc]);
     attr_means = mean(traindata_befpca');
     
-    [coeff, score, latent] = princomp(traindata_befpca', 'econ');
+    [coeff, score, latent] = pca(traindata_befpca');
     traindata_afterpca = score(:,1:pcadims)';
     [model.vocab, model.assoc] = vl_kmeans(vl_colsubset(single(traindata_afterpca), 1e6), histopts.num_bins, 'verbose','algorithm', 'ANN') ;
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
