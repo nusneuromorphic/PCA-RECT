@@ -22,6 +22,12 @@ num_test= 2;
 filename = 'traindata_binTD4cl_CYnewobs.dat';
 testfiles_save = 'testfiles_binTD4cl_CYnewobs';
 
+try
+  canUseGPU = parallel.gpu.GPUDevice.isAvailable;
+catch ME
+  canUseGPU = false;
+end
+
 if exist(filename, 'file') ~= 2
     % Training and testing set filenames
     for i=1:num_classes
@@ -133,9 +139,10 @@ if training_desc_done == 0
     save('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat',...
         'train_label','trainimage_sizes','-v7.3');
     
-    poolobj = gcp('nocreate');
-    delete(poolobj);
-    
+    if canUseGPU == 1
+        poolobj = gcp('nocreate');
+        delete(poolobj);
+    end
 else
     disp('Loading descrs...');
     load('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat');
@@ -304,9 +311,10 @@ for repeat= 1
         save('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat',...
             'test_label','testimage_sizes','-v7.3');
         
-        poolobj = gcp('nocreate');
-        delete(poolobj);
-        
+        if canUseGPU == 1
+            poolobj = gcp('nocreate');
+            delete(poolobj);
+        end
     else
         disp('Loading test descrs...'); % nneds modification of code if desc_done=0
         load('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat');

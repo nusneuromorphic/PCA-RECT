@@ -35,6 +35,12 @@ refractory_period = 1e3;
 training_done = 0;
 training_desc_done = 0; % for debug purposes only , if desc have been stored
 
+try
+  canUseGPU = parallel.gpu.GPUDevice.isAvailable;
+catch ME
+  canUseGPU = false;
+end
+
 % The training phase is here so that it is easy to change parameters
 % and check the code of the FPGA implmentation. The testing stage will be
 % made modular like how the FPGA implementation is intended to be, fixed
@@ -110,9 +116,10 @@ if training_done == 0
         save('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat',...
             'train_label','trainimage_sizes','-v7.3');
         
-        poolobj = gcp('nocreate');
-        delete(poolobj);
-        
+        if canUseGPU == 1
+            poolobj = gcp('nocreate');
+            delete(poolobj);
+        end
     else
         disp('Loading descrs...');
         load('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
