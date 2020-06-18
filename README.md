@@ -35,3 +35,20 @@ Tune codebook size:
    2. CTRL+H to replace "100codebok" to "150codebok"
 
 Then, you can run the code to load or get your data properly.
+
+## Citation ##
+Ramesh B., Ussa A., Vedova L.D., Yang H., Orchard G. (2019) PCA-RECT: An Energy-Efficient Object Detection Approach for Event Cameras. In: Carneiro G., You S. (eds) Computer Vision – ACCV 2018 Workshops. ACCV 2018. Lecture Notes in Computer Science, vol 11367. Springer, Cham
+
+```bibtex
+@InProceedings{10.1007/978-3-030-21074-8_35,
+   author="Ramesh, Bharath and Ussa, Andr{\'e}s and Vedova, Luca Della and Yang, Hong and Orchard, Garrick",
+   editor="Carneiro, Gustavo and You, Shaodi",
+   title="PCA-RECT: An Energy-Efficient Object Detection Approach for Event Cameras",
+   booktitle="Computer Vision -- ACCV 2018 Workshops",
+   year="2019",
+   publisher="Springer International Publishing",
+   address="Cham",
+   pages="434--449",
+   isbn="978-3-030-21074-8"
+}
+```
