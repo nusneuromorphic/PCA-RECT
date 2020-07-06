@@ -86,12 +86,12 @@ if training_done == 0
                 filename = subfolder_names{train_classi};
                 filepath = fullfile(train_dataset_path,classi_name, filename);
                 
-                TD = read_linux(filepath);
+                TD = read_linux(filepath, 0);
                 TD = ImplementRefraction(TD, refractory_period);
                 TD = FilterTD(TD, us_time_filter);
                 
                 if numel(TD.x) < 3000
-                    TD = read_linux(filepath);
+                    TD = read_linux(filepath, 0);
                     TD = ImplementRefraction(TD, refractory_period);
                 end
                 
@@ -267,7 +267,7 @@ for class_i=1:num_classes
         filename = subfolder_names{image_classi};
         filepath = fullfile(test_dataset_path,classi_name, filename);
         
-        TD = read_linux(filepath);
+        TD = read_linux(filepath, 0);
         TD.x = TD.x(:);
         TD.y = TD.y(:);
         TD.ts = TD.ts(:);
@@ -278,7 +278,7 @@ for class_i=1:num_classes
         TD = FilterTD(TD, us_time_filter);
         
         if numel(TD.x) < 3000
-            TD = read_linux(filepath);
+            TD = read_linux(filepath, 0);
             TD = ImplementRefraction(TD, refractory_period);
         end
         

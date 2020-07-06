@@ -45,7 +45,7 @@ if exist(filename, 'file') ~= 2
         
         for ii = randomize_files{i}
             filepath = fullfile(folder_path, subfolder_names{ii});
-            img = read_linux(filepath);
+            img = read_linux(filepath, 0);
             if size(img.x,2) > 5000
                 index = [index ii];
             end
@@ -114,7 +114,7 @@ if training_desc_done == 0
             filename = all_filenames{count};
             filepath = fullfile(train_dataset_path,classi_name, filename);
             
-            TD = read_linux(filepath);
+            TD = read_linux(filepath, 0);
             TD = FilterTD(TD, us_time_filter);
             
             trainimage_sizes(count,:) = [max(TD.y) max(TD.x)];
@@ -289,7 +289,7 @@ for repeat= 1
                 
                 savepath_file = fullfile(test_desc_savefolder, classi_name, filename(1:end-4));
                 
-                TD = read_linux(filepath);
+                TD = read_linux(filepath, 0);
                 TD = FilterTD(TD, us_time_filter);
                 
                 testimage_sizes(count,:) = [max(TD.y) max(TD.x)];

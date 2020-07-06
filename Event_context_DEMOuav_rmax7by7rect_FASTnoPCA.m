@@ -64,12 +64,12 @@ if training_desc_done == 0
             filename = subfolder_names{train_classi};
             filepath = fullfile(train_dataset_path,classi_name, filename);
             
-            TD = read_linux(filepath);
+            TD = read_linux(filepath, 0);
             TD = ImplementRefraction(TD, refractory_period);
             TD = FilterTD(TD, us_time_filter);
             
             if numel(TD.x) < 3000
-                TD = read_linux(filepath);
+                TD = read_linux(filepath, 0);
                 TD = ImplementRefraction(TD, refractory_period);
             end
             
@@ -233,12 +233,12 @@ for repeat= 1
                 
                 savepath_file = fullfile(test_desc_savefolder, classi_name, filename(1:end-4));
                 
-                TD = read_linux(filepath);
+                TD = read_linux(filepath, 0);
                 TD = ImplementRefraction(TD, refractory_period);
                 TD = FilterTD(TD, us_time_filter);
                 
                 if numel(TD.x) < 3000
-                    TD = read_linux(filepath);
+                    TD = read_linux(filepath, 0);
                     TD = ImplementRefraction(TD, refractory_period);
                 end
                 
@@ -293,7 +293,7 @@ for repeat= 1
             
             % Read original TD for display
             filepath = fullfile(test_dataset_path,classi_name, filename);
-            TD = read_linux(filepath); % the bin files are stored with refraction and FilterTD already
+            TD = read_linux(filepath, 0); % the bin files are stored with refraction and FilterTD already
             
             TD.x = TD.x(:);
             TD.y = TD.y(:);
@@ -305,7 +305,7 @@ for repeat= 1
             TD = FilterTD(TD, us_time_filter);
             
             if numel(TD.x) < 3000
-                TD = read_linux(filepath);
+                TD = read_linux(filepath, 0);
                 TD = ImplementRefraction(TD, refractory_period);
             end
             
