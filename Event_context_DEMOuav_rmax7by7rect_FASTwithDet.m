@@ -1,6 +1,7 @@
 clear;
 close all;
 
+warning('off', 'MATLAB:MKDIR:DirectoryExists');
 % Add VLFeat toolbox to MATLAB working path
 run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
