@@ -36,7 +36,22 @@ Tune codebook size:
 
 Then, you can run the code to load or get your data properly.
 
-## Citation ##
+## Citations ##
+Ramesh B., Ussa A., Vedova L.D., Yang H., Orchard G. (2020) Low-Power Dynamic Object Detection and Classification With Freely Moving Event Cameras. Front. Neurosci. 14:135 doi: 10.3389/fnins.2020.00135
+
+```bibtex
+@ARTICLE{10.3389/fnins.2020.00135,
+   AUTHOR="Ramesh, Bharath and Ussa, Andrés and Della Vedova, Luca and Yang, Hong and Orchard, Garrick",
+   TITLE="Low-Power Dynamic Object Detection and Classification With Freely Moving Event Cameras",
+   JOURNAL="Frontiers in Neuroscience",
+   VOLUME="14",
+   PAGES="135",
+   YEAR="2020",
+   DOI="10.3389/fnins.2020.00135",
+   ISSN="1662-453X"
+}
+```
+
 Ramesh B., Ussa A., Vedova L.D., Yang H., Orchard G. (2019) PCA-RECT: An Energy-Efficient Object Detection Approach for Event Cameras. In: Carneiro G., You S. (eds) Computer Vision – ACCV 2018 Workshops. ACCV 2018. Lecture Notes in Computer Science, vol 11367. Springer, Cham
 
 ```bibtex
