@@ -34,7 +34,7 @@ function [train_data, train_label, rndIdxArr] = readDescs(path, numTD, norm)
     nSample = ceil(numTD/num_classes);
     for i=1:num_classes
         classname = classnames(i).name;
-        disp(fullfile(path, classname));
+        fprintf("Getting descriptors from: %s\n", fullfile(path, classname));
         datainclass = dir2(fullfile(path, classname));
         rndIdx = randperm(length(datainclass));
         rndIdxArr(i).rndIdx = rndIdx;
@@ -58,6 +58,7 @@ function [train_data, train_label, rndIdxArr] = readDescs(path, numTD, norm)
             train_label= [train_label ones(1,size(train_data(count).frames,2)) * i];
         end  
     end
+    disp(' ');
 end
 
 function output = l2norm(input)
