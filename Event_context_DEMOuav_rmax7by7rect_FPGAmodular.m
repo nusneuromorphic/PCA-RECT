@@ -2,6 +2,8 @@ clear;
 close all;
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
+
+tic;
 % Add VLFeat toolbox to MATLAB working path
 run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
@@ -35,6 +37,8 @@ refractory_period = 1e3;
 % Debug purpose --
 training_done = 0;
 training_desc_done = 0; % for debug purposes only , if desc have been stored
+
+show_detect = 0;
 
 try
   canUseGPU = parallel.gpu.GPUDevice.isAvailable;
@@ -70,10 +74,12 @@ catch
 end
 
 if training_done == 0
+    fprintf('\n\n------------------------------Starting Training Stage------------------------------\n\n');
     count = 0;
     train_desc_savefolder = './Recognition_FPGA_trainfiles/D5DEMOrectFPGA_splitaug/';
     mkdir(train_desc_savefolder);
     if training_desc_done == 0
+        fprintf('Getting events and saving descriptors for training...\n\n');
         for class_i=1:num_classes
             classi_name = cell2mat(classnames(class_i));
             folder_path = fullfile(train_dataset_path,classi_name);
@@ -110,7 +116,7 @@ if training_done == 0
                 end
                 
                 train_label = [train_label class_i];
-                disp(count);
+                fprintf('File num: %d\n\n', count);
             end
         end
         
@@ -122,7 +128,7 @@ if training_done == 0
             delete(poolobj);
         end
     else
-        disp('Loading descrs...');
+        fprintf('Loading descriptors...\n\n');
         load('./Recognition_FPGA_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
     end
     
@@ -136,6 +142,7 @@ if training_done == 0
         mkdir('./Recognition_FPGA_trainfiles/ECtrainmodels/');
         save(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
             num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model','loctrain_label');
+        disp(' ');
     end
     
     % Initialize detection vector
@@ -158,7 +165,7 @@ if training_done == 0
             filename = subfolder_names{j};
             
             filepath=fullfile(train_desc_savefolder, classname, [filename(1:end-4) '.mat']);
-            disp(filepath);
+            fprintf('Binning: %s\n', filepath);
             [train_data, loctrain_label, label] = readDescs(filepath, [], 'nonorm');
             start_chunk = 1;
             end_chunk = event_chunk_period;
@@ -220,6 +227,7 @@ if training_done == 0
     save('./Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat','svmmodel','detector_codewords');
     
 else
+    fprintf("Loading previously generated SVM model...\n\n");
     % Load the SVM
     load('./Recognition_FPGA_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_newkd_withDet.mat');
     
@@ -229,6 +237,7 @@ else
     svmmodel.w = vpa(svmmodel.w);
     svmmodel.b = vpa(svmmodel.b);
     
+    fprintf("Loading previously generated codebook...\n\n");
     % Load the codebook
     load(['./Recognition_FPGA_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
@@ -243,6 +252,7 @@ end
 count = 0;
 count_sep = 0;
 test_label = [];
+fprintf('\n\n------------------------------Starting Testing Stage------------------------------\n\n');
 
 % Detection matrix, similar to the count matrix
 det_matrix = zeros(180,240);
@@ -256,6 +266,7 @@ max_x = 240/subsamp_count_matrix;
 
 % Read one TD sample at a time and process, can be used to test a sequence of TD files
 % for the offline FPGA testing
+fprintf('Getting events for testing...\n');
 for class_i=1:num_classes
     classi_name = cell2mat(classnames(class_i));
     folder_path = fullfile(test_dataset_path,classi_name);
@@ -267,6 +278,9 @@ for class_i=1:num_classes
         count = count + 1;
         filename = subfolder_names{image_classi};
         filepath = fullfile(test_dataset_path,classi_name, filename);
+        
+        disp(filepath);
+        fprintf('File num: %d\n\n', count);
         
         TD = read_linux(filepath, 0);
         TD.x = TD.x(:);
@@ -348,20 +362,20 @@ for class_i=1:num_classes
                 if obj_cat(count_sep,2) == det_class  % Detect only when object is present in the FOV
                     
                     [detected_locs_y,detected_locs_x]  = find(det_matrix > max(det_matrix(:))-1);
-                    
-                    figure(1),
-                    imshow(temp_count_matrix)
-                    hold on
-                    plot(ceil(mean(detected_locs_x)), ceil(mean(detected_locs_y)), 'g+', 'MarkerSize',30);
-                    hold off
-                    drawnow()
+                    if show_detect == 1
+                        figure(1),
+                        imshow(temp_count_matrix)
+                        hold on
+                        plot(ceil(mean(detected_locs_x)), ceil(mean(detected_locs_y)), 'g+', 'MarkerSize',30);
+                        hold off
+                        drawnow()
+                    end
                     
                 end
                 test_label = [test_label class_i]; % only for offline comparison
                 
                 desc_count = 0; %reset
                 bow_histogram = zeros(histopts.num_bins, 1);
-                disp(count_sep);
                 
                 %reset detection matrix
                 det_matrix = zeros(180,240);
@@ -371,6 +385,7 @@ for class_i=1:num_classes
     end
 end
 
-error_locs=find(obj_cat(:,2)'~=test_label)
-error_per=length(error_locs)
+error_locs=find(obj_cat(:,2)'~=test_label);
+error_per=length(error_locs);
 accuracy= 100*(numel(test_label)-  error_per)/numel(test_label)
+toc

@@ -2,6 +2,8 @@ clear;
 close all;
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
+
+tic;
 % Add VLFeat toolbox to MATLAB working path
 run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
@@ -37,6 +39,8 @@ training_desc_done = 0; % for debug purposes only
 svmtraining_done = 0;
 testing_desc_done = 0;
 
+show_detect = 0;
+
 try
   canUseGPU = parallel.gpu.GPUDevice.isAvailable;
 catch ME
@@ -51,7 +55,9 @@ end
 count = 0;
 train_desc_savefolder = './Recognition_trainfiles/D5DEMOrectFASTnoPCA_splitaug/';
 mkdir(train_desc_savefolder);
+fprintf('\n\n------------------------------Starting Training Stage------------------------------\n\n');
 if training_desc_done == 0
+    fprintf('Getting events and saving descriptors for training...\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         folder_path = fullfile(train_dataset_path,classi_name);
@@ -88,8 +94,7 @@ if training_desc_done == 0
             end
             
             train_label = [train_label class_i];
-            disp(count);
-            
+            fprintf('File num: %d\n\n', count);
         end
     end
     
@@ -101,7 +106,7 @@ if training_desc_done == 0
         delete(poolobj);
     end
 else
-    disp('Loading descrs...');
+    fprintf('Loading descriptors...\n\n');
     load('./Recognition_trainfiles/D5DEMO4splitAUGdesc_7x7subsamp2x2_ustime5e3.mat');
 end
 
@@ -116,15 +121,19 @@ svmOpts.biasMultiplier = 1 ;
 % Build the codebook
 clearvars model net
 model_str_stringname = 'modelTD4cl_D5DEMOsplitAUG_FASTnoPCA';
+fprintf("Loading previously generated codebook...");
 try
     load(['./Recognition_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
+    fprintf("   Found!\n\n");
 catch
     model_done = 0;
+    fprintf("   Not Found!\n\n");
 end
 
 if model_done == 0
+    fprintf("Generating codebook...\n\n");
     [train_data, loctrain_label, new_train_label] = readDescs(train_desc_savefolder,20, 'nonorm');
     [model.vocab, model.assoc] = vl_kmeans(vl_colsubset(single([train_data.desc]), 4e6), histopts.num_bins, 'verbose','algorithm', 'ANN') ;
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
@@ -132,6 +141,7 @@ if model_done == 0
     mkdir('./Recognition_trainfiles/ECtrainmodels/');
     save(['./Recognition_trainfiles/ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model');
+    disp(' ');
 end
 
 % For possbile integer comparisons on FPGA
@@ -158,7 +168,7 @@ for repeat= 1
                 filename = subfolder_names{j};
                 
                 filepath=fullfile(train_desc_savefolder, classname, [filename(1:end-4) '.mat']);
-                disp(filepath);
+                fprintf('Binning: %s\n', filepath);
                 [train_data, loctrain_label, label] = readDescs(filepath, [], 'nonorm');
                 
                 start_chunk = 1;
@@ -205,6 +215,7 @@ for repeat= 1
         svmmodel.w = w;
         save('./Recognition_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat','svmmodel');
     else
+        fprintf("Loading previously generated SVM model...\n\n");
         load('./Recognition_trainfiles/svvmodel_D5DEMOsplitAUG_FPGAver2_150codebokNONORM_7by7_noPCA.mat');
     end
     
@@ -219,6 +230,7 @@ for repeat= 1
     test_desc_savefolder = './Recognition_trainfiles/D5DEMOrect_FPGAver2_testsplitaug/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
+        fprintf('\nGetting events and saving descriptors for testing...\n');
         for class_i=1:num_classes
             classi_name = cell2mat(classnames(class_i));
             folder_path = fullfile(test_dataset_path,classi_name);
@@ -255,7 +267,7 @@ for repeat= 1
                 end
                 
                 test_label = [test_label class_i];
-                disp(count);
+                fprintf('File num: %d\n\n', count);
             end
         end
         testing_desc_done =1;
@@ -267,7 +279,7 @@ for repeat= 1
             delete(poolobj);
         end
     else
-        disp('Loading test descrs...'); % needs modification of code if desc_done=0
+        disp('Loading test descriptors...'); % needs modification of code if desc_done=0
         load('./Recognition_trainfiles/D5DEMO4splitAUGtestdesc_7by7subsamp2x2_ustime5e3_noPCA.mat');
     end
     
@@ -278,6 +290,7 @@ for repeat= 1
     count_sep =0;
     save_for_majvot = [];
     test_label = [];
+    fprintf('\n\n------------------------------Starting Testing Stage------------------------------\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         folder_path = fullfile(test_dataset_path,classi_name);
@@ -347,11 +360,15 @@ for repeat= 1
                     end
                     all_linear_indices = sub2ind(size(temp_count_matrix), all_locations_y, all_locations_x);
                     temp_count_matrix(all_linear_indices) = temp_count_matrix(all_linear_indices) + 1;
-                    figure(1),
-                    imshow(temp_count_matrix)
-                    title(sprintf('Classified as %s',cell2mat(classnames(obj_cat(count_sep,2)))));
-                    drawnow()
-                    pause(2)
+                    
+                    if show_detect == 1
+                        figure(1),
+                        imshow(temp_count_matrix)
+                        title(sprintf('Classified as %s',cell2mat(classnames(obj_cat(count_sep,2)))));
+                        drawnow()
+                        pause(2)
+                    end
+                    
                     temp_count_matrix = zeros(size(temp_count_matrix));
                 end
                 start_chunk = end_chunk + 1;
@@ -363,12 +380,13 @@ for repeat= 1
                 
             end
             save_for_majvot(count) = count_sep;
-            disp(count);
+            fprintf('File num: %d\n\n', count);
         end
     end
     
-    error_locs=find(obj_cat(:,2)'~=test_label)
-    error_per=length(error_locs)
+    error_locs=find(obj_cat(:,2)'~=test_label);
+    error_per=length(error_locs);
     accuracy(repeat)= 100*(numel(test_label)-  error_per)/numel(test_label)
     confusionmat(single(test_label), single(obj_cat(:,2)));
 end
+toc

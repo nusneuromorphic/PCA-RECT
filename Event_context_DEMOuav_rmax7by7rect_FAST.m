@@ -2,6 +2,8 @@ clear;
 close all;
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
+
+tic;
 % Add VLFeat toolbox to MATLAB working path
 run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
@@ -30,6 +32,13 @@ catch ME
   canUseGPU = false;
 end
 
+param.descsize = 5; % denotes a N by N region sampled from the subsampled count matrix
+param.queuesize = 5000;
+param.countmatsubsamp = 2; % a 2 by 2 cell region for the count matrix
+param.minNumEvents = 200; % wait for this many events before getting desc from queue
+
+disp(param);
+
 if exist(filename, 'file') ~= 2
     % Training and testing set filenames
     for i=1:num_classes
@@ -54,7 +63,6 @@ if exist(filename, 'file') ~= 2
                 break
             end
         end
-        disp(i);
         train_filenames{i} = vl_colsubset(subfolder_names(index),num_train, 'beginning');
         test_filenames{i} =  vl_colsubset(subfolder_names(index),num_test, 'beginning');
     end
@@ -78,13 +86,6 @@ fclose(fid);
 
 load(testfiles_save);
 
-param.descsize = 5; % denotes a N by N region sampled from the subsampled count matrix
-param.queuesize = 5000;
-param.countmatsubsamp = 2; % a 2 by 2 cell region for the count matrix
-param.minNumEvents = 200; % wait for this many events before getting desc from queue
-
-disp(param);
-
 % TD Noise Filter
 % Assumes Garrick's AER functions are available (www.garrickorchard.com)
 us_time_filter = 5e3; % in micro-seconds
@@ -98,10 +99,13 @@ testing_desc_done = 0;
 % and check the code of the FPGA implmentation. The testing stage will be
 % made modular like how the FPGA implementation is intended to be, fixed
 % precision and memory constraints closely followed.
+
 count = 0;
 train_desc_savefolder = './ECtraindata_DEMOrectFAST_ver2_5by5_PCA/';
 mkdir(train_desc_savefolder);
+fprintf('\n\n------------------------------Starting Training Stage------------------------------\n\n');
 if training_desc_done == 0
+    fprintf('Getting events and saving descriptors for training...\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         folder_path = fullfile(train_dataset_path,classi_name);
@@ -132,7 +136,7 @@ if training_desc_done == 0
             end
             
             train_label = [train_label class_i];
-            disp(count);
+            fprintf('File num: %d\n\n', count);
         end
     end
     
@@ -144,7 +148,7 @@ if training_desc_done == 0
         delete(poolobj);
     end
 else
-    disp('Loading descrs...');
+    fprintf('Loading descriptors...\n\n');
     load('./NDEMO4desc_5by5subsamp2x2_ustime5e3_PCA.mat');
 end
 
@@ -157,19 +161,23 @@ svmOpts.C = 10 ;
 svmOpts.biasMultiplier = 1 ;
 
 pcadims = 25;
-fprintf('pcadims = %d\n', pcadims);
+fprintf('pcadims = %d\n\n', pcadims);
 % Build the codebook
 clearvars model net
 model_str_stringname = 'modelTD4cl_DEMO_FASTver2nonorm_PCA';
+fprintf("Loading previously generated codebook...");
 try
     load(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
+    fprintf("   Found!\n\n");
 catch
     model_done = 0;
+    fprintf("   Not Found!\n\n");
 end
 
 if model_done == 0
+    fprintf("Generating codebook...\n\n");
     [train_data, loctrain_label, new_train_label] = readDescs(train_desc_savefolder,8,'nonorm');
     traindata_befpca = single([train_data.desc]);
     attr_means = mean(traindata_befpca');
@@ -184,6 +192,7 @@ if model_done == 0
     save(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(pcadims) num2str(param.countmatsubsamp) num2str(param.descsize)], ...
         'model', 'attr_means', 'coeff');
+    disp(' ');
 end
 
 % For possbile integer comparisons on FPGA
@@ -210,7 +219,7 @@ for repeat= 1
                 filename = all_filenames{count};
                 
                 filepath=fullfile(train_desc_savefolder, classname, [filename(1:end-4) '.mat']);
-                disp(filepath);
+                fprintf('Binning: %s\n', filepath);
                 [train_data, loctrain_label, label] = readDescs(filepath, [], 'nonorm');
                 
                 traindata_befpca = single([train_data.desc]);
@@ -266,6 +275,7 @@ for repeat= 1
         save('svvmodel_DEMO_FASTver2_150codebok_5by5_NONORM_PCA.mat','svmmodel');
         
     else
+        fprintf("Loading previously generated SVM model...\n\n");
         load('svvmodel_DEMO_FASTver2_150codebok_5by5_NONORM_PCA.mat');
     end
     
@@ -279,6 +289,7 @@ for repeat= 1
     test_desc_savefolder = './ECtestdata_DEMOrect_FASTver2_5by5_PCA/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
+        fprintf('\nGetting events and saving descriptors for testing...\n');
         for class_i=1:num_classes
             classi_name = cell2mat(classnames(class_i));
             test_classi = test_filenames{class_i};
@@ -304,7 +315,7 @@ for repeat= 1
                 end
                 
                 test_label = [test_label class_i];
-                disp(count);
+                fprintf('File num: %d\n\n', count);
             end
         end
         testing_desc_done =1;
@@ -316,7 +327,7 @@ for repeat= 1
             delete(poolobj);
         end
     else
-        disp('Loading test descrs...'); % needs modification of code if desc_done=0
+        disp('Loading test descriptors...'); % needs modification of code if desc_done=0
         load('./NDEMO4testdesc_5by5subsamp2x2_ustime5e3_PCA.mat');
     end
     
@@ -328,6 +339,7 @@ for repeat= 1
     count_sep =0;
     save_for_majvot = [];
     test_label = [];
+    fprintf('\n\n------------------------------Starting Testing Stage------------------------------\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         test_classi = test_filenames{class_i};
@@ -375,11 +387,12 @@ for repeat= 1
                 
             end
             save_for_majvot(count) = count_sep;
-            disp(count);
+            fprintf('File num: %d\n\n', count);
         end
     end
     
-    error_locs=find(obj_cat(:,2)'~=test_label)
-    error_per=length(error_locs)
+    error_locs=find(obj_cat(:,2)'~=test_label);
+    error_per=length(error_locs);
     accuracy(repeat)= 100*(numel(test_label)-  error_per)/numel(test_label)
 end
+toc

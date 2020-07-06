@@ -2,6 +2,8 @@ clear;
 close all;
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
+
+tic;
 % Add VLFeat toolbox to MATLAB working path
 run('vlfeat-0.9.17-bin/vlfeat-0.9.17/toolbox/vl_setup.m');
 addpath(genpath('getNmnistDesc'));
@@ -23,11 +25,20 @@ num_test= 2;
 filename = 'traindata_binTD4cl_CYnewobs.dat';
 testfiles_save = 'testfiles_binTD4cl_CYnewobs';
 
+show_detect = 0;
+
 try
   canUseGPU = parallel.gpu.GPUDevice.isAvailable;
 catch ME
   canUseGPU = false;
 end
+
+param.descsize = 7; % denotes a N by N region sampled from the subsampled count matrix
+param.queuesize = 5000;
+param.countmatsubsamp = 2; % a 2 by 2 cell region for the count matrix
+param.minNumEvents = 200; % wait for this many events before getting desc from queue
+
+disp(param);
 
 if exist(filename, 'file') ~= 2
     % Training and testing set filenames
@@ -53,7 +64,6 @@ if exist(filename, 'file') ~= 2
                 break
             end
         end
-        disp(i);
         train_filenames{i} = vl_colsubset(subfolder_names(index),num_train, 'beginning');
         test_filenames{i} =  vl_colsubset(subfolder_names(index),num_test, 'beginning');
     end
@@ -77,13 +87,6 @@ fclose(fid);
 
 load(testfiles_save);
 
-param.descsize = 7; % denotes a N by N region sampled from the subsampled count matrix
-param.queuesize = 5000;
-param.countmatsubsamp = 2; % a 2 by 2 cell region for the count matrix
-param.minNumEvents = 200; % wait for this many events before getting desc from queue
-
-disp(param);
-
 % TD Noise Filter
 % Assumes Garrick's AER functions are available (www.garrickorchard.com)
 us_time_filter = 5e3; % in micro-seconds
@@ -101,7 +104,9 @@ testing_desc_done = 0;
 count = 0;
 train_desc_savefolder = './ECtraindata_FASTWithDet/';
 mkdir(train_desc_savefolder);
+fprintf('\n\n------------------------------Starting Training Stage------------------------------\n\n');
 if training_desc_done == 0
+    fprintf('Getting events and saving descriptors for training...\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         folder_path = fullfile(train_dataset_path,classi_name);
@@ -132,8 +137,7 @@ if training_desc_done == 0
             end
             
             train_label = [train_label class_i];
-            disp(count);
-            
+            fprintf('File num: %d\n\n', count);
         end
     end
     
@@ -145,7 +149,7 @@ if training_desc_done == 0
         delete(poolobj);
     end
 else
-    disp('Loading descrs...');
+    fprintf('Loading descriptors...\n\n');
     load('./NDEMO4desc_7x7subsamp2x2_ustime5e3.mat');
 end
 
@@ -164,15 +168,19 @@ svmOpts.biasMultiplier = 1 ;
 % Build the codebook
 clearvars model net
 model_str_stringname = 'modelTD4cl_DEMO_FASTWithDet';
+fprintf("Loading previously generated codebook...");
 try
     load(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)]);
     model_done = 1;
+    fprintf("   Found!\n\n");
 catch
     model_done = 0;
+    fprintf("   Not Found!\n\n");
 end
 
 if model_done == 0
+    fprintf("Generating codebook...\n\n");
     [train_data, loctrain_label, new_train_label] = readDescs(train_desc_savefolder,8,'nonorm');
     [model.vocab, model.assoc] = vl_kmeans(vl_colsubset(single([train_data.desc]), 4e6), histopts.num_bins, 'verbose','algorithm', 'ANN') ;
     model.kdtree = vl_kdtreebuild(model.vocab, 'Distance','L1') ;
@@ -180,6 +188,7 @@ if model_done == 0
     mkdir('./ECtrainmodels/');
     save(['./ECtrainmodels/' model_str_stringname ...
         num2str(histopts.num_bins) num2str(param.countmatsubsamp) num2str(param.descsize)],'model');
+    disp(' ');
 end
 
 % For possbile integer comparisons on FPGA
@@ -206,7 +215,7 @@ for repeat= 1
                 filename = all_filenames{count};
                 
                 filepath=fullfile(train_desc_savefolder, classname, [filename(1:end-4) '.mat']);
-                disp(filepath);
+                fprintf('Binning: %s\n', filepath);
                 [train_data, loctrain_label, label] = readDescs(filepath, [], 'nonorm');
                 
                 start_chunk = 1;
@@ -266,6 +275,7 @@ for repeat= 1
         save('svvmodel_DEMO_FPGAver2_150codebokNONORM_det.mat','svmmodel','detector_codewords');
         
     else
+        fprintf("Loading previously generated SVM model...\n\n");
         load('svvmodel_DEMO_FPGAver2_150codebokNONORM_det.mat');
     end
     
@@ -279,6 +289,7 @@ for repeat= 1
     test_desc_savefolder = './ECtestdata_FASTWithDet/';
     mkdir(test_desc_savefolder);
     if testing_desc_done == 0
+        fprintf('\nGetting events and saving descriptors for testing...\n');
         for class_i=1:num_classes
             classi_name = cell2mat(classnames(class_i));
             test_classi = test_filenames{class_i};
@@ -304,8 +315,7 @@ for repeat= 1
                 end
                 
                 test_label = [test_label class_i];
-                disp(count);
-                
+                fprintf('File num: %d\n\n', count);
             end
         end
         testing_desc_done =1;
@@ -317,7 +327,7 @@ for repeat= 1
             delete(poolobj);
         end
     else
-        disp('Loading test descrs...'); % nneds modification of code if desc_done=0
+        disp('Loading test descriptors...'); % nneds modification of code if desc_done=0
         load('./NDEMO4testdesc_7x7subsamp2x2_ustime5e3.mat');
     end
     
@@ -332,6 +342,7 @@ for repeat= 1
     count_sep =0;
     save_for_majvot = [];
     test_label = [];
+    fprintf('\n\n------------------------------Starting Testing Stage------------------------------\n\n');
     for class_i=1:num_classes
         classi_name = cell2mat(classnames(class_i));
         test_classi = test_filenames{class_i};
@@ -392,12 +403,14 @@ for repeat= 1
                     all_linear_indices = sub2ind(size(det_matrix), all_locations_y, all_locations_x);
                     temp_count_matrix(all_linear_indices) = temp_count_matrix(all_linear_indices) + 1;
                     
-                    figure(1),
-                    imshow(temp_count_matrix)
-                    hold on
-                    plot(ceil(mean(detected_locations_x)), ceil(mean(detected_locations_y)), 'g+', 'MarkerSize',30);
-                    hold off
-                    drawnow()
+                    if show_detect == 1
+                        figure(1),
+                        imshow(temp_count_matrix)
+                        hold on
+                        plot(ceil(mean(detected_locations_x)), ceil(mean(detected_locations_y)), 'g+', 'MarkerSize',30);
+                        hold off
+                        drawnow()
+                    end
                     
                     %Reset count matrix and detection matrix
                     det_matrix = zeros(trainimage_sizes(1,1),trainimage_sizes(1,2));  % trainimage_sizes is in [y x] order already
@@ -412,12 +425,12 @@ for repeat= 1
                 end
             end
             save_for_majvot(count) = count_sep;
-            disp(count);
-            
+            fprintf('File num: %d\n\n', count);
         end
     end
     
-    error_locs=find(obj_cat(:,2)'~=test_label)
-    error_per=length(error_locs)
+    error_locs=find(obj_cat(:,2)'~=test_label);
+    error_per=length(error_locs);
     accuracy(repeat)= 100*(numel(test_label)-  error_per)/numel(test_label)
 end
+toc
